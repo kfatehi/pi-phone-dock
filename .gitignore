@@ -1,0 +1,4 @@
+vosk-model-*
+*.ogg
+*.wav
+*.flac
