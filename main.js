@@ -36,7 +36,7 @@ async function main() {
             let translation = await translate(farsiText, {from: 'fa', to: 'en'});
             
             console.log(translation.text);
-            let englishAudioFile = englishtts(translation.text);
+            let englishAudioFile = await englishtts(translation.text);
             await englishAudioFile.play();
             await englishAudioFile.rm();
             // let farsiSpeechURL = await farsiTts(farsiText);

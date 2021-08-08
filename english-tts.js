@@ -14,8 +14,8 @@ const { AudioFile } = require('./audio-file');
 
 module.exports = async function(inputText) {
     return new Promise((resolve, reject) => {
-        let audioFile = tempFile('.wav');
-        let pico2wave = spawn('pico2wave', ['-w', audioFile, inputText]);
+        let audioFile = new AudioFile(tempFile('.wav'));
+        let pico2wave = spawn('pico2wave', ['-w', audioFile.path, inputText]);
 
         let stdout = '';
         let stderr = '';
@@ -27,7 +27,7 @@ module.exports = async function(inputText) {
         pico2wave.on('exit', (code)=>{
             console.log("pico done", audioFile, code);
             if (code === 0) {
-                resolve(new AudioFile(audioFile));
+                resolve(audioFile);
             } else {
                 reject(stderr);
             }
