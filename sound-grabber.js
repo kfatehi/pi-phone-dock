@@ -15,6 +15,13 @@ class SoundGrabber extends EventEmitter {
     constructor(config) {
         super()
         this.config = config;
+        if (!this.config.silence) {
+            this.config.silence = [
+                // nice explanation of silence behavior here https://unix.stackexchange.com/questions/318164/sox-split-audio-on-silence-but-keep-silence
+                '1', '0.1', '0.1%', // Remove silence, if any, at the start until 0.1 seconds of sound above 0.1%
+                '1', '0.5', '0.1%' // Stop when there is at least 0.5 seconds of silence below 0.1%
+            ]
+        }
     }
     start() {
         let audioFile = tempFile('.wav');

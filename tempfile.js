@@ -1,7 +1,8 @@
 
+
 function tempFile(ext='.flac') {
-    let ts = new Date().getTime();
-    let tempFile = '/dev/shm/aud-'+ts+ext;
+    let rand = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+    let tempFile = '/dev/shm/'+rand+ext;
     return tempFile;
 }
 

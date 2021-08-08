@@ -1,0 +1,20 @@
+
+pacat -d alsa_output.usb-SteelSeries_SteelSeries_Arctis_7-00.analog-mono --rate 16000 --channels=1 /dev/shm/aud-1628409295606.wav
+
+pi@raspberrypi:~/project $ pacmd list-sinks | grep -e 'name:' -e 'index' -e 'Speakers' | grep name
+  name: <alsa_output.platform-bcm2835_audio.digital-stereo>
+  name: <alsa_output.platform-bcm2835_audio.analog-stereo>
+  name: <alsa_output.usb-SteelSeries_SteelSeries_Arctis_7-00.analog-mono>
+  name: <alsa_output.usb-SteelSeries_SteelSeries_Arctis_7-00.analog-stereo>
+  name: <bluez_sink.DC_52_85_E1_60_48.headset_audio_gateway>
+
+
+pi@raspberrypi:~/project $ pacmd list-sources | grep -e 'name:' -e 'index' -e 'Speakers' | grep name
+  name: <alsa_output.platform-bcm2835_audio.digital-stereo.monitor>
+  name: <alsa_output.platform-bcm2835_audio.analog-stereo.monitor>
+  name: <alsa_output.usb-SteelSeries_SteelSeries_Arctis_7-00.analog-mono.monitor>
+  name: <alsa_output.usb-SteelSeries_SteelSeries_Arctis_7-00.analog-stereo.monitor>
+  name: <alsa_input.usb-SteelSeries_SteelSeries_Arctis_7-00.analog-mono>
+  name: <bluez_sink.DC_52_85_E1_60_48.headset_audio_gateway.monitor>
+  name: <bluez_source.DC_52_85_E1_60_48.headset_audio_gateway>
+

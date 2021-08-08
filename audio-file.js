@@ -2,7 +2,6 @@
 // with the audio file as it gets emitted from the soundgrabber.
 const spawn = require('child_process').spawn;
 const fs = require('fs');
-const voskFarsi = require('./vosk-fa');
 
 class AudioFile {
     constructor(path) {
@@ -31,16 +30,6 @@ class AudioFile {
         })
     }
 
-    async recognizeFarsi() {
-        let result = await voskFarsi(this.path);
-        if (result.alternatives.length) {
-            let text = result.alternatives[0].text;
-            if (text.length) {
-                return text;
-            }
-        }
-        return null;
-    }
 }
 
 
