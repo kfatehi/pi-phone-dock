@@ -1,3 +1,8 @@
+// In this design we use consecutive interpretation
+// And we disrupt the flow of the call letting both parties hear
+// everything. https://en.wikipedia.org/wiki/Language_interpretation#Consecutive
+// Original proof of concept / prototype.
+
 const { SoundGrabber } = require('./sound-grabber');
 const translate = require('@vitalets/google-translate-api');
 const { textToSpeech } = require('./tts');
