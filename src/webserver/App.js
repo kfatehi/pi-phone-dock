@@ -166,7 +166,7 @@ export class App extends React.Component {
       {this.renderPulseOption('userMicSource',              'pulseSources',   "User Mic")}
       {this.renderPulseOption('userSpeakerSink',            'pulseSinks',     "User Speaker")}
 
-      <h2>Interpeter</h2>
+      <h2>Interpreter</h2>
       {this.state.interpreterEnabled ? <button onClick={()=>this.sendEvent('interpreter-stop')}>Stop</button> : <button onClick={()=>this.sendEvent('interpreter-start')}>Start</button>}
     </div>
   }
