@@ -65,6 +65,7 @@ const { getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevic
 const { trackClient } = require('./global-socketry');
 
 const { getPulseConfig, setPulseConfig, getPulseChoices } = require('./pulseaudio-helpers');
+const { getInterpreterStatus, startInterpreter, stopInterpreter } = require('./interpreter-helpers');
 
 wss.on('connection', (ws) => {
     function sendEvent(name, data = {}) {
@@ -128,6 +129,15 @@ wss.on('connection', (ws) => {
                 case 'set-pulse-config':{
                     setPulseConfig(payload.key, payload.value);
                 } break; 
+                case 'get-interpreter-status': {
+                    getInterpreterStatus();
+                } break;
+                case 'interpreter-start': {
+                    startInterpreter();
+                } break;
+                case 'interpreter-stop': {
+                    stopInterpreter();
+                } break;
                 default: {
                     console.log('unhandled payload:', payload);
                 }

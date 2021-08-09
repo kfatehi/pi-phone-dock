@@ -45,6 +45,11 @@ class SoundGrabber extends EventEmitter {
             this.emit('audio-file', new AudioFile(audioFile));
         });
     }
+    stop() {
+        console.log("Stopping sound grabber!");
+        this.sox.removeAllListeners('exit');
+        this.parec.kill();
+    }
 }
 
 module.exports = {

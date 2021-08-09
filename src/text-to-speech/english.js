@@ -9,8 +9,8 @@ sudo apt-get install -f ./libttspico0_1.0+git20130326-9_armhf.deb ./libttspico-u
 // newer version requires libc6 2.29 but this pi is on 2.28, so we left it alone
 //    libttspico0 : Depends: libc6 (>= 2.29) but 2.28-10+rpi1 is to be installed
 const spawn = require('child_process').spawn;
-const { tempFile } = require('./tempfile');
-const { AudioFile } = require('./audio-file');
+const { tempFile } = require('../core/tempfile');
+const { AudioFile } = require('../core/audio-file');
 
 module.exports = async function(inputText) {
     return new Promise((resolve, reject) => {

@@ -16,7 +16,8 @@ export class App extends React.Component {
       bluetoothController: {/* macAddress, info:{attributes}*/ },
       pulseSinks: [],
       pulseSources: [],
-      pulseConfig: {}
+      pulseConfig: {},
+      interpreterEnabled: false,
     }
 
     setInterval(() => {
@@ -58,6 +59,7 @@ export class App extends React.Component {
         this.sendEvent("get-bluetooth-controller-info");
         this.sendEvent("get-pulse-config");
         this.sendEvent("get-pulse-choices");
+        this.sendEvent("get-interpreter-status");
       }
       this.ws.onmessage = ({ data }) => {
         try {
@@ -97,6 +99,12 @@ export class App extends React.Component {
             case 'pulse-config': {
               this.setState({ pulseConfig: payload.config })
             } break;
+            case 'interpreter-status': {
+              this.setState({ interpreterEnabled: payload.enabled })
+            } break;
+            case 'log': {
+              console.log(payload.logPrefix, ...payload.args)
+            } break;
             default: {
               console.log('unhandled event:', payload);
             }
@@ -115,6 +123,22 @@ export class App extends React.Component {
 
   renderConnectedWebsocket() {
     return this.state.bluetoothController && this.state.bluetoothController.info ? this.renderBluetoothControllerAvailable() : <div>Almost there...</div>;
+  }
+
+  renderPulseOption(fieldKey, optionsKey, label) {
+    let opts = [...this.state[optionsKey]];
+    let value = this.state.pulseConfig[fieldKey];
+    if (value && value.length && !opts.find(({name})=>value === name)) {
+      // it doesn't exist, probaly because bluetooth device is in a2dp mode instead of hfp mode, stil want to see the selection.
+      // so let's add it to the list so it wil be selected.
+      opts = [...opts, { name: value }]
+    }
+    return <fieldset>
+      <label>{label}</label>
+      <select value={value} onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: fieldKey, value })}>
+        {opts.map(({ name }) => <option key={name} value={name}>{name}</option>)}
+      </select>
+    </fieldset>
   }
 
   renderBluetoothControllerAvailable() {
@@ -137,17 +161,13 @@ export class App extends React.Component {
         </li>)}
       </ul>
 
-      <fieldset>
-        <label>Bluetooth Phone Mic</label>
-        <select value={this.state.pulseConfig.audiogatewayMicSink} onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'audiogatewayMicSink', value })}>
-          {this.state.pulseSinks.map(({ name }) => <option key={name} value={name}>{name}</option>)}
-        </select>
-      </fieldset>
+      {this.renderPulseOption('audiogatewayMicSink',        'pulseSinks',     "Bluetooth Phone Mic")}
+      {this.renderPulseOption('audiogatewaySpeakerSource',  'pulseSources',   "Bluetooth Phone Speaker")}
+      {this.renderPulseOption('userMicSource',              'pulseSources',   "User Mic")}
+      {this.renderPulseOption('userSpeakerSink',            'pulseSinks',     "User Speaker")}
 
-      <fieldset><label>Bluetooth Phone Speaker</label><select onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'audiogatewaySpeakerSource', value })}>{this.state.pulseSources.map(({ name }) => <option key={name}>{name}</option>)}</select></fieldset>
-      <fieldset><label>User Mic</label><select onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'userMicSource', value })}>{this.state.pulseSources.map(({ name }) => <option key={name}>{name}</option>)}</select></fieldset>
-      <fieldset><label>User Speaker</label><select onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'userSpeakerSink', value })}>{this.state.pulseSinks.map(({ name }) => <option key={name}>{name}</option>)}</select></fieldset>
-
+      <h2>Interpeter</h2>
+      {this.state.interpreterEnabled ? <button onClick={()=>this.sendEvent('interpreter-stop')}>Stop</button> : <button onClick={()=>this.sendEvent('interpreter-start')}>Start</button>}
     </div>
   }
 }

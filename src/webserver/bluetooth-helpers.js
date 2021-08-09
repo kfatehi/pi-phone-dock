@@ -104,7 +104,7 @@ const getDiscoveredDeviceList = sendEvent => {
 let scanProc = null;
 let scanResultInterval = null;
 const getOrCreateBluetoothScanInstance = () => {
-    if (scanProc) return;
+    if (scanProc === null) return;
     scanProc = spawn("bluetoothctl", ['--', 'scan', 'on']);
     scanProc.stdout.pipe(split2()).on('data', (data)=>{
         // devices stream in here but rather use interval

@@ -1,8 +1,8 @@
 const axios = require('axios');
-const { tempFile } = require('./tempfile');
 const fs = require('fs');
 const { spawn } = require('child_process');
-const { AudioFile } = require('./audio-file');
+const { tempFile } = require('../core/tempfile');
+const { AudioFile } = require('../core/audio-file');
 
 async function tts(content) {
     return new Promise(async (resolve, reject)=>{

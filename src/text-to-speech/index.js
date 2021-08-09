@@ -1,5 +1,5 @@
-const englishtts = require('./english-tts');
-const farsitts = require('./farsi-tts');
+const englishtts = require('./english');
+const farsitts = require('./farsi');
 
 function getInstance(lang) {
     switch (lang) {
