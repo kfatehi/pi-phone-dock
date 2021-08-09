@@ -59,36 +59,55 @@ app.use(webpackDevMiddleware(compiler));
 
 // app.use(express.static('/', 'public'));
 
+const spawn = require('child_process').spawn;
+const split2 = require('split2');
+
+const { getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevice }  = require('./bluetooth-helpers');
+
 wss.on('connection', (ws) => {
     function sendEvent(name, data = {}) {
-        ws.send(JSON.stringify({ name, ...data }));
+        let payload = { name, ...data };
+        console.log('>>', payload);
+        ws.send(JSON.stringify(payload));
     }
 
     //connection is up, let's add a simple simple event
     ws.on('message', (raw) => {
         try {
-            let event = JSON.parse(raw);
-            switch (event.name) {
+            let payload = JSON.parse(raw);
+            console.log('<<', payload);
+            switch (payload.name) {
                 case "ping": {
                     sendEvent("pong")
                 } break;
                 case 'get-everything': {
-                    sendEvent("pulse-sinks", { sinks: [] });
-                    sendEvent("pulse-sources", { sources: [] });
-                    sendEvent("bluetooth-devices", { devices: [] });
-                    sendEvent("apps", {
-                        apps: [{
-                            name: 'consecutive-interpreter',
-                            configSchema: {
-                                partnerLanguage: [{ id: "fa", label: "Farsi (Persian)" }],
-                                userLanguage: [{ id: "en", label: "English" }],
-                            }
-                        }]
-                    });
-                    sendEvent("consecutive-interpreter", { state: "off", userLanguage: 'en', partnerLanguage: 'fa' });
+                    // sendEvent("pulse-sinks", { sinks: [] });
+                    // sendEvent("pulse-sources", { sources: [] });
+                    // sendEvent("apps", {
+                    //     apps: [{
+                    //         name: 'consecutive-interpreter',
+                    //         configSchema: {
+                    //             partnerLanguage: [{ id: "fa", label: "Farsi (Persian)" }],
+                    //             userLanguage: [{ id: "en", label: "English" }],
+                    //         }
+                    //     }]
+                    // });
+                    // sendEvent("consecutive-interpreter", { state: "off", userLanguage: 'en', partnerLanguage: 'fa' });
+                } break;
+                case 'get-bluetooth-paired-devices': {
+                    getPairedDeviceList(sendEvent);
+                } break;
+                case 'get-bluetooth-device-info':{
+                    getInfo(sendEvent)(payload.macAddress);
+                } break;
+                case 'bluetooth-connect-paired-device':{
+                    connectPairedDevice(sendEvent)(payload.macAddress);
+                } break;
+                case 'bluetooth-disconnect-paired-device':{
+                    disconnectPairedDevice(sendEvent)(payload.macAddress);
                 } break;
                 default: {
-                    console.log('unhandled event:', event);
+                    console.log('unhandled payload:', payload);
                 }
             }
         } catch (err) {
