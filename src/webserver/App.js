@@ -13,11 +13,14 @@ export class App extends React.Component {
       bluetoothDiscoveredDevices: [],
       bluetoothPairedDevices: [],
       bluetoothDeviceInfo: {/* macAddress: {attributes}*/ },
-      bluetoothController: {/* macAddress, info:{attributes}*/ }
+      bluetoothController: {/* macAddress, info:{attributes}*/ },
+      pulseSinks: [],
+      pulseSources: [],
+      pulseConfig: {}
     }
 
-    setInterval(()=>{
-      let {bluetoothController} = this.state;
+    setInterval(() => {
+      let { bluetoothController } = this.state;
       if (bluetoothController && bluetoothController.info && bluetoothController.info.discovering === "yes") {
         this.sendEvent("get-bluetooth-controller-info");
       }
@@ -53,6 +56,8 @@ export class App extends React.Component {
         this.sendEvent("get-everything");
         this.sendEvent("get-bluetooth-paired-devices");
         this.sendEvent("get-bluetooth-controller-info");
+        this.sendEvent("get-pulse-config");
+        this.sendEvent("get-pulse-choices");
       }
       this.ws.onmessage = ({ data }) => {
         try {
@@ -86,6 +91,12 @@ export class App extends React.Component {
             case 'bluetooth-discovered-devices': {
               this.setState({ bluetoothDiscoveredDevices: payload.devices })
             } break;
+            case 'pulse-choices': {
+              this.setState({ pulseSinks: payload.sinks, pulseSources: payload.sources })
+            } break;
+            case 'pulse-config': {
+              this.setState({ pulseConfig: payload.config })
+            } break;
             default: {
               console.log('unhandled event:', payload);
             }
@@ -108,13 +119,13 @@ export class App extends React.Component {
 
   renderBluetoothControllerAvailable() {
     return <div>
-      { this.state.bluetoothController.info.discovering === "yes" ? <button onClick={() => this.sendEvent("bluetooth-scan-off")}>Stop Scan</button> : <button onClick={() => this.sendEvent("bluetooth-scan-on")}>Start Scan</button> }
+      {this.state.bluetoothController.info.discovering === "yes" ? <button onClick={() => this.sendEvent("bluetooth-scan-off")}>Stop Scan</button> : <button onClick={() => this.sendEvent("bluetooth-scan-on")}>Start Scan</button>}
       <button onClick={() => this.sendEvent("get-bluetooth-paired-devices")}>Refresh Bluetooth Paired Devices</button>
-      
+
 
       <ul>
-        {this.state.bluetoothDiscoveredDevices.filter((device)=>!this.state.bluetoothDeviceInfo[device.macAddress]).map(device => <li key={device.macAddress}>
-          <span>{device.name} <button onClick={()=>this.sendEvent('bluetooth-pair-device', { macAddress: device.macAddress })}>Pair</button></span>
+        {this.state.bluetoothDiscoveredDevices.filter((device) => !this.state.bluetoothDeviceInfo[device.macAddress]).map(device => <li key={device.macAddress}>
+          <span>{device.name} <button onClick={() => this.sendEvent('bluetooth-pair-device', { macAddress: device.macAddress })}>Pair</button></span>
         </li>)}
       </ul>
 
@@ -125,6 +136,18 @@ export class App extends React.Component {
           </div> : "getting info"}
         </li>)}
       </ul>
+
+      <fieldset>
+        <label>Bluetooth Phone Mic</label>
+        <select value={this.state.pulseConfig.audiogatewayMicSink} onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'audiogatewayMicSink', value })}>
+          {this.state.pulseSinks.map(({ name }) => <option key={name} value={name}>{name}</option>)}
+        </select>
+      </fieldset>
+
+      <fieldset><label>Bluetooth Phone Speaker</label><select onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'audiogatewaySpeakerSource', value })}>{this.state.pulseSources.map(({ name }) => <option key={name}>{name}</option>)}</select></fieldset>
+      <fieldset><label>User Mic</label><select onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'userMicSource', value })}>{this.state.pulseSources.map(({ name }) => <option key={name}>{name}</option>)}</select></fieldset>
+      <fieldset><label>User Speaker</label><select onChange={({ target: { value } }) => this.sendEvent('set-pulse-config', { key: 'userSpeakerSink', value })}>{this.state.pulseSinks.map(({ name }) => <option key={name}>{name}</option>)}</select></fieldset>
+
     </div>
   }
 }

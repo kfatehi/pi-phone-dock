@@ -64,6 +64,8 @@ const { getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevic
 
 const { trackClient } = require('./global-socketry');
 
+const { getPulseConfig, setPulseConfig, getPulseChoices } = require('./pulseaudio-helpers');
+
 wss.on('connection', (ws) => {
     function sendEvent(name, data = {}) {
         let payload = { name, ...data };
@@ -117,10 +119,15 @@ wss.on('connection', (ws) => {
                 case 'bluetooth-scan-off':{
                     destroyBluetoothScanInstance();
                 } break;
-                case 'bluetooth-pair-device':{
-                    destroyBluetoothScanInstance();
-                    pairDevice(payload.macAddress)
-                }
+                case 'get-pulse-choices':{
+                    getPulseChoices();
+                } break;
+                case 'get-pulse-config':{
+                    getPulseConfig();
+                } break;
+                case 'set-pulse-config':{
+                    setPulseConfig(payload.key, payload.value);
+                } break; 
                 default: {
                     console.log('unhandled payload:', payload);
                 }
