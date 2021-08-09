@@ -11,7 +11,6 @@ const trackClient = (ws) => {
 }
 
 const broadcast = (name, data={}) => {
-    console.log("awefawef", clients)
     for (let id of Object.keys(clients)) {
         let client = clients[id];
         let payload = { name, ...data };

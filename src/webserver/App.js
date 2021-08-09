@@ -111,9 +111,10 @@ export class App extends React.Component {
       { this.state.bluetoothController.info.discovering === "yes" ? <button onClick={() => this.sendEvent("bluetooth-scan-off")}>Stop Scan</button> : <button onClick={() => this.sendEvent("bluetooth-scan-on")}>Start Scan</button> }
       <button onClick={() => this.sendEvent("get-bluetooth-paired-devices")}>Refresh Bluetooth Paired Devices</button>
       
+
       <ul>
-        {this.state.bluetoothDiscoveredDevices.map(device => <li key={device.macAddress}>
-          <span>{device.name}</span>
+        {this.state.bluetoothDiscoveredDevices.filter((device)=>!this.state.bluetoothDeviceInfo[device.macAddress]).map(device => <li key={device.macAddress}>
+          <span>{device.name} <button onClick={()=>this.sendEvent('bluetooth-pair-device', { macAddress: device.macAddress })}>Pair</button></span>
         </li>)}
       </ul>
 

@@ -126,9 +126,27 @@ const destroyBluetoothScanInstance = () => {
     getDiscoveredDeviceList(broadcast);
 }
 
+let pairProc = null;
+const pairDevice = (macAddress) =>{
+    if (pairProc) {
+        pairProc.kill()
+        pairProc = null;
+    }
+    setTimeout(()=>{        
+        spawn("bluetoothctl", ['--', 'trust', macAddress]).on('exit', ()=>{
+            pairProc = spawn("bluetoothctl", ['--', 'pair', macAddress]);
+            pairProc.on('exit', ()=>{
+                getPairedDeviceList(broadcast);
+                connectPairedDevice(broadcast);
+            })
+        })
+    }, 1000)
+}
+
 module.exports = {
     getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevice, getControllerInfo,
     getDiscoveredDeviceList,
     getOrCreateBluetoothScanInstance,
-    destroyBluetoothScanInstance
+    destroyBluetoothScanInstance,
+    pairDevice
 }

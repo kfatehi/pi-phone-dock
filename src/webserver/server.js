@@ -59,7 +59,7 @@ app.use(webpackDevMiddleware(compiler));
 
 const { getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevice, getControllerInfo,
     getOrCreateBluetoothScanInstance,
-    destroyBluetoothScanInstance
+    destroyBluetoothScanInstance, pairDevice
   }  = require('./bluetooth-helpers');
 
 const { trackClient } = require('./global-socketry');
@@ -117,6 +117,10 @@ wss.on('connection', (ws) => {
                 case 'bluetooth-scan-off':{
                     destroyBluetoothScanInstance();
                 } break;
+                case 'bluetooth-pair-device':{
+                    destroyBluetoothScanInstance();
+                    pairDevice(payload.macAddress)
+                }
                 default: {
                     console.log('unhandled payload:', payload);
                 }
