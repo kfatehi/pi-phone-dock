@@ -10,9 +10,18 @@ export class App extends React.Component {
     super()
     this.state = {
       wsConnected: false,
+      bluetoothDiscoveredDevices: [],
       bluetoothPairedDevices: [],
-      bluetoothDeviceInfo: {/* macAddress: {attributes}*/}
+      bluetoothDeviceInfo: {/* macAddress: {attributes}*/ },
+      bluetoothController: {/* macAddress, info:{attributes}*/ }
     }
+
+    setInterval(()=>{
+      let {bluetoothController} = this.state;
+      if (bluetoothController && bluetoothController.info && bluetoothController.info.discovering === "yes") {
+        this.sendEvent("get-bluetooth-controller-info");
+      }
+    }, 1000);
   }
 
   componentDidMount() {
@@ -43,8 +52,9 @@ export class App extends React.Component {
         }, 5000)
         this.sendEvent("get-everything");
         this.sendEvent("get-bluetooth-paired-devices");
-      }      
-      this.ws.onmessage = ({data}) => {
+        this.sendEvent("get-bluetooth-controller-info");
+      }
+      this.ws.onmessage = ({ data }) => {
         try {
           let payload = JSON.parse(data);
           console.log('<<', payload);
@@ -57,7 +67,7 @@ export class App extends React.Component {
               this.sendEvent("pong")
             } break;
             case 'bluetooth-paired-devices': {
-              payload.devices.forEach((device)=>{
+              payload.devices.forEach((device) => {
                 this.sendEvent("get-bluetooth-device-info", { macAddress: device.macAddress })
               });
               this.setState({ bluetoothPairedDevices: payload.devices })
@@ -70,6 +80,12 @@ export class App extends React.Component {
                 }
               })
             } break;
+            case 'bluetooth-controller-info': {
+              this.setState({ bluetoothController: { macAddress: payload.macAddress, info: payload.info } })
+            } break;
+            case 'bluetooth-discovered-devices': {
+              this.setState({ bluetoothDiscoveredDevices: payload.devices })
+            } break;
             default: {
               console.log('unhandled event:', payload);
             }
@@ -81,20 +97,33 @@ export class App extends React.Component {
     }
   }
 
-  renderConnectedView() {
+  render() {
+    return this.state.wsConnected ? this.renderConnectedWebsocket() : <div>Please wait...</div>;
+  }
+
+
+  renderConnectedWebsocket() {
+    return this.state.bluetoothController && this.state.bluetoothController.info ? this.renderBluetoothControllerAvailable() : <div>Almost there...</div>;
+  }
+
+  renderBluetoothControllerAvailable() {
     return <div>
-      <button onClick={()=>this.sendEvent("get-bluetooth-paired-devices")}>Refresh Bluetooth Paired Devices</button>
+      { this.state.bluetoothController.info.discovering === "yes" ? <button onClick={() => this.sendEvent("bluetooth-scan-off")}>Stop Scan</button> : <button onClick={() => this.sendEvent("bluetooth-scan-on")}>Start Scan</button> }
+      <button onClick={() => this.sendEvent("get-bluetooth-paired-devices")}>Refresh Bluetooth Paired Devices</button>
+      
       <ul>
-        {this.state.bluetoothPairedDevices.map(device=><li key={device.macAddress}>
+        {this.state.bluetoothDiscoveredDevices.map(device => <li key={device.macAddress}>
+          <span>{device.name}</span>
+        </li>)}
+      </ul>
+
+      <ul>
+        {this.state.bluetoothPairedDevices.map(device => <li key={device.macAddress}>
           <span>{device.name}</span>{this.state.bluetoothDeviceInfo[device.macAddress] ? <div>
-            {this.state.bluetoothDeviceInfo[device.macAddress].connected === "yes" ? <span>connected <button onClick={()=>this.sendEvent('bluetooth-disconnect-paired-device', { macAddress: device.macAddress })}>disconnect</button></span> : <button onClick={()=>this.sendEvent('bluetooth-connect-paired-device', { macAddress: device.macAddress })}>connect</button> }
+            {this.state.bluetoothDeviceInfo[device.macAddress].connected === "yes" ? <span>connected <button onClick={() => this.sendEvent('bluetooth-disconnect-paired-device', { macAddress: device.macAddress })}>disconnect</button></span> : <button onClick={() => this.sendEvent('bluetooth-connect-paired-device', { macAddress: device.macAddress })}>connect</button>}
           </div> : "getting info"}
         </li>)}
       </ul>
     </div>
-  }
-
-  render() {
-    return this.state.wsConnected ? this.renderConnectedView() : <div>Connecting...</div>;
   }
 }

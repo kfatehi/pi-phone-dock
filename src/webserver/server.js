@@ -57,12 +57,12 @@ const compiler = webpack({
 
 app.use(webpackDevMiddleware(compiler));
 
-// app.use(express.static('/', 'public'));
+const { getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevice, getControllerInfo,
+    getOrCreateBluetoothScanInstance,
+    destroyBluetoothScanInstance
+  }  = require('./bluetooth-helpers');
 
-const spawn = require('child_process').spawn;
-const split2 = require('split2');
-
-const { getInfo, getPairedDeviceList, connectPairedDevice, disconnectPairedDevice }  = require('./bluetooth-helpers');
+const { trackClient } = require('./global-socketry');
 
 wss.on('connection', (ws) => {
     function sendEvent(name, data = {}) {
@@ -70,6 +70,8 @@ wss.on('connection', (ws) => {
         console.log('>>', payload);
         ws.send(JSON.stringify(payload));
     }
+
+    trackClient(ws);
 
     //connection is up, let's add a simple simple event
     ws.on('message', (raw) => {
@@ -105,6 +107,15 @@ wss.on('connection', (ws) => {
                 } break;
                 case 'bluetooth-disconnect-paired-device':{
                     disconnectPairedDevice(sendEvent)(payload.macAddress);
+                } break;
+                case 'get-bluetooth-controller-info':{
+                    getControllerInfo(sendEvent);
+                } break;
+                case 'bluetooth-scan-on':{
+                    getOrCreateBluetoothScanInstance();
+                } break;
+                case 'bluetooth-scan-off':{
+                    destroyBluetoothScanInstance();
                 } break;
                 default: {
                     console.log('unhandled payload:', payload);
