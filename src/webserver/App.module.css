@@ -1,6 +1,4 @@
-.background {
-    color: black;
-}
-.button {
+.dark {
+    background-color: black;
     color: white;
 }

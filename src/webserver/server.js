@@ -25,7 +25,7 @@ const compiler = webpack({
     plugins: [
         new HtmlWebpackPlugin({
             title: "Pi Phone Dock",
-            template: __dirname+'/index.ejs'
+            template: __dirname + '/index.ejs'
         })
     ],
     mode: 'development',
@@ -60,17 +60,41 @@ app.use(webpackDevMiddleware(compiler));
 // app.use(express.static('/', 'public'));
 
 wss.on('connection', (ws) => {
+    function sendEvent(name, data = {}) {
+        ws.send(JSON.stringify({ name, ...data }));
+    }
 
     //connection is up, let's add a simple simple event
-    ws.on('message', (message) => {
-
-        //log the received message and send it back to the client
-        console.log('received: %s', message);
-        ws.send(`Hello, you sent -> ${message}`);
+    ws.on('message', (raw) => {
+        try {
+            let event = JSON.parse(raw);
+            switch (event.name) {
+                case "ping": {
+                    sendEvent("pong")
+                } break;
+                case 'get-everything': {
+                    sendEvent("pulse-sinks", { sinks: [] });
+                    sendEvent("pulse-sources", { sources: [] });
+                    sendEvent("bluetooth-devices", { devices: [] });
+                    sendEvent("apps", {
+                        apps: [{
+                            name: 'consecutive-interpreter',
+                            configSchema: {
+                                partnerLanguage: [{ id: "fa", label: "Farsi (Persian)" }],
+                                userLanguage: [{ id: "en", label: "English" }],
+                            }
+                        }]
+                    });
+                    sendEvent("consecutive-interpreter", { state: "off", userLanguage: 'en', partnerLanguage: 'fa' });
+                } break;
+                default: {
+                    console.log('unhandled event:', event);
+                }
+            }
+        } catch (err) {
+            console.error(err.stack)
+        }
     });
-
-    //send immediatly a feedback to the incoming connection    
-    ws.send('Hi there, I am a WebSocket server');
 });
 
 
