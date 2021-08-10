@@ -1,4 +1,4 @@
-# Hacker Phone Dock
+# Pi Phone Dock
 
 Apple doesn't allow you to access the audio streams of standard calls on your iPhone via API, that's why you don't see any proper call recording apps, only bullshit "workarounds" that do not work and presumably lead you to installing malware.
 
